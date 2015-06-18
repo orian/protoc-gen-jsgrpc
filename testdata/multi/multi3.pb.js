@@ -18,7 +18,7 @@ multitest.Multi3.HatType = {
 
 multitest.Multi3.HatTypeNames = {
   1: "FEDORA",
-  2: "FEZ",
+  2: "FEZ"
 };
 
 /**

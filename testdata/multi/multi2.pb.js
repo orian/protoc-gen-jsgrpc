@@ -21,7 +21,7 @@ multitest.Multi2.Color = {
 multitest.Multi2.ColorNames = {
   1: "BLUE",
   2: "GREEN",
-  3: "RED",
+  3: "RED"
 };
 
 /**
@@ -106,19 +106,35 @@ multitest.SearchResponse = function () {
 goog.inherits(my.test.Request, goog.proto2.Message);
 
 /**
- * Sets the value of the result field.
- * @param {[]String} value The value.
+ * Adds the value to the result repeated field.
+ * @param {Array.<String>} value The value.
  */
-multitest.SearchResponse.prototype.setResult = function(value) {
-  this.set$Value(1, value);
+multitest.SearchResponse.prototype.addResult = function(value) {
+  this.add$Value(1, value);
 };
 
 /**
  * Gets the value of the result field.
- * @return {?[]String} The value.
+ * @param {!number} index of the element.
+ * @return {?Array.<String>} The value.
  */
-multitest.SearchResponse.prototype.getResult = function() {
-  return /** @type {?[]String} */ (this.get$Value(1));
+multitest.SearchResponse.prototype.getResult = function(index) {
+  return /** @type {?Array.<String>} */ (this.get$Value(1, index));
+};
+
+/**
+ * Gets the number of values in the result field.
+ * @return {!number} number of value.
+ */
+multitest.SearchResponse.prototype.countResult = function() {
+  return this.count$Values(1);
+};
+
+/**
+ * Clears the values in the result field.
+ */
+multitest.SearchResponse.prototype.clearResult = function() {
+  return this.clear$Field(1);
 };
 
 /**

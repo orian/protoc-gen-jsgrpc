@@ -1231,11 +1231,11 @@ func (g *Generator) generateEnum(enum *EnumDescriptor) {
 	g.P(" */")
 	g.P(jsTypeName, " = {")
 	g.In()
+	lineEnd := ","
 	for i, e := range enum.Value {
 		g.PrintComments(fmt.Sprintf("%s,%d,%d", enum.path, enumValuePath, i))
 
 		name := *e.Name
-		lineEnd := ","
 		if i == len(enum.Value)-1 {
 			lineEnd = ""
 		}
@@ -1249,12 +1249,16 @@ func (g *Generator) generateEnum(enum *EnumDescriptor) {
 	g.P(jsTypeName, "Names = {")
 	g.In()
 	generated := make(map[int32]bool) // avoid duplicate values
-	for _, e := range enum.Value {
+	lineEnd = ","
+	for i, e := range enum.Value {
 		duplicate := ""
 		if _, present := generated[*e.Number]; present {
 			duplicate = "// Duplicate value: "
 		}
-		g.P(duplicate, e.Number, ": ", strconv.Quote(*e.Name), ",")
+		if i == len(enum.Value)-1 {
+			lineEnd = ""
+		}
+		g.P(duplicate, e.Number, ": ", strconv.Quote(*e.Name), lineEnd)
 		generated[*e.Number] = true
 	}
 	g.Out()
@@ -1425,90 +1429,34 @@ func (g *Generator) JsType(message *Descriptor, field *descriptor.FieldDescripto
 		typ, wire = "String", "BYTES"
 	case descriptor.FieldDescriptorProto_TYPE_GROUP:
 		desc := g.ObjectNamed(field.GetTypeName())
-		typ, wire = "*"+g.TypeName(desc), "GROUP"
+		typ, wire = g.TypeName(desc), "GROUP"
 	case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
 		desc := g.ObjectNamed(field.GetTypeName())
-		typ, wire = "*"+g.TypeName(desc), "MESSAGE"
+		typ, wire = g.TypeName(desc), "MESSAGE"
 	case descriptor.FieldDescriptorProto_TYPE_BYTES:
 		typ, wire = "[]byte", "bytes"
 	case descriptor.FieldDescriptorProto_TYPE_ENUM:
 		desc := g.ObjectNamed(field.GetTypeName())
 		typ, wire = g.TypeName(desc), "INT32"
 	case descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-		typ, wire = "int32", "SFIXED32"
+		typ, wire = "Number", "SFIXED32"
 	case descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-		typ, wire = "int64", "SFIXED64"
+		typ, wire = "Number", "SFIXED64"
 	case descriptor.FieldDescriptorProto_TYPE_SINT32:
-		typ, wire = "int32", "SINT32"
+		typ, wire = "Number", "SINT32"
 	case descriptor.FieldDescriptorProto_TYPE_SINT64:
-		typ, wire = "int64", "SINT64"
+		typ, wire = "Number", "SINT64"
 	default:
 		g.Fail("unknown type for", field.GetName())
 	}
 	if isRepeated(field) {
-		typ = "[]" + typ
+		typ = "Array.<" + typ + ">"
 	}
 //else if message != nil && message.proto3() {
 //		return
 //	} else if needsStar(*field.Type) {
 //		typ = "*" + typ
 //	}
-	return
-}
-
-// GoType returns a string representing the type name, and the wire type
-func (g *Generator) GoType(message *Descriptor, field *descriptor.FieldDescriptorProto) (typ string, wire string) {
-	// TODO: Options.
-	switch *field.Type {
-	case descriptor.FieldDescriptorProto_TYPE_DOUBLE:
-		typ, wire = "float64", "fixed64"
-	case descriptor.FieldDescriptorProto_TYPE_FLOAT:
-		typ, wire = "float32", "fixed32"
-	case descriptor.FieldDescriptorProto_TYPE_INT64:
-		typ, wire = "int64", "varint"
-	case descriptor.FieldDescriptorProto_TYPE_UINT64:
-		typ, wire = "uint64", "varint"
-	case descriptor.FieldDescriptorProto_TYPE_INT32:
-		typ, wire = "int32", "varint"
-	case descriptor.FieldDescriptorProto_TYPE_UINT32:
-		typ, wire = "uint32", "varint"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED64:
-		typ, wire = "uint64", "fixed64"
-	case descriptor.FieldDescriptorProto_TYPE_FIXED32:
-		typ, wire = "uint32", "fixed32"
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		typ, wire = "bool", "varint"
-	case descriptor.FieldDescriptorProto_TYPE_STRING:
-		typ, wire = "string", "bytes"
-	case descriptor.FieldDescriptorProto_TYPE_GROUP:
-		desc := g.ObjectNamed(field.GetTypeName())
-		typ, wire = "*"+g.TypeName(desc), "group"
-	case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-		desc := g.ObjectNamed(field.GetTypeName())
-		typ, wire = "*"+g.TypeName(desc), "bytes"
-	case descriptor.FieldDescriptorProto_TYPE_BYTES:
-		typ, wire = "[]byte", "bytes"
-	case descriptor.FieldDescriptorProto_TYPE_ENUM:
-		desc := g.ObjectNamed(field.GetTypeName())
-		typ, wire = g.TypeName(desc), "varint"
-	case descriptor.FieldDescriptorProto_TYPE_SFIXED32:
-		typ, wire = "int32", "fixed32"
-	case descriptor.FieldDescriptorProto_TYPE_SFIXED64:
-		typ, wire = "int64", "fixed64"
-	case descriptor.FieldDescriptorProto_TYPE_SINT32:
-		typ, wire = "int32", "zigzag32"
-	case descriptor.FieldDescriptorProto_TYPE_SINT64:
-		typ, wire = "int64", "zigzag64"
-	default:
-		g.Fail("unknown type for", field.GetName())
-	}
-	if isRepeated(field) {
-		typ = "[]" + typ
-	} else if message != nil && message.proto3() {
-		return
-	} else if needsStar(*field.Type) {
-		typ = "*" + typ
-	}
 	return
 }
 
@@ -1587,31 +1535,85 @@ func (m *messageGenerator) generateField(field *descriptor.FieldDescriptorProto)
 	m.fieldNames[field] = fieldName
 	m.fieldGetterNames[field] = fieldGetterName
 
-	g.P("/**")
-	g.indent = " * "
-	g.P("Sets the value of the ", jsonName, " field.")
-	g.P("@param {", typ, "} value The value.")
-	g.indent = ""
-	g.P(" */")
-	g.P(m.jsTypeName, ".prototype.set", fieldName, " = function(value) {")
-	g.In()
-	g.P("this.set$Value(", field.Number, ", value);")
-	g.Out()
-	g.P("};")
-	g.P()
+	if isRepeated(field) {
+		g.P("/**")
+		g.indent = " * "
+		g.P("Adds the value to the ", jsonName, " repeated field.")
+		g.P("@param {", typ, "} value The value.")
+		g.indent = ""
+		g.P(" */")
+		g.P(m.jsTypeName, ".prototype.add", fieldName, " = function(value) {")
+		g.In()
+		g.P("this.add$Value(", field.Number, ", value);")
+		g.Out()
+		g.P("};")
+		g.P()
 
-	g.P("/**")
-	g.indent = " * "
-	g.P("Gets the value of the ", jsonName," field.")
-	g.P("@return {?", typ, "} The value.")
-	g.indent = ""
-	g.P(" */")
-	g.P(m.jsTypeName, ".prototype.get", fieldName, " = function() {")
-	g.In()
-	g.P("return /** @type {?", typ,"} */ (this.get$Value(", field.Number, "));")
-	g.Out()
-	g.P("};")
-	g.P()
+		g.P("/**")
+		g.indent = " * "
+		g.P("Gets the value of the ", jsonName, " field.")
+		g.P("@param {!number} index of the element.")
+		g.P("@return {?", typ, "} The value.")
+		g.indent = ""
+		g.P(" */")
+		g.P(m.jsTypeName, ".prototype.get", fieldName, " = function(index) {")
+		g.In()
+		g.P("return /** @type {?", typ, "} */ (this.get$Value(", field.Number, ", index));")
+		g.Out()
+		g.P("};")
+		g.P()
+
+		g.P("/**")
+		g.indent = " * "
+		g.P("Gets the number of values in the ", jsonName, " field.")
+		g.P("@return {!number} number of value.")
+		g.indent = ""
+		g.P(" */")
+		g.P(m.jsTypeName, ".prototype.count", fieldName, " = function() {")
+		g.In()
+		g.P("return this.count$Values(", field.Number, ");")
+		g.Out()
+		g.P("};")
+		g.P()
+
+		g.P("/**")
+		g.indent = " * "
+		g.P("Clears the values in the ", jsonName, " field.")
+		g.indent = ""
+		g.P(" */")
+		g.P(m.jsTypeName, ".prototype.clear", fieldName, " = function() {")
+		g.In()
+		g.P("return this.clear$Field(", field.Number, ");")
+		g.Out()
+		g.P("};")
+		g.P()
+	}else {
+		g.P("/**")
+		g.indent = " * "
+		g.P("Sets the value of the ", jsonName, " field.")
+		g.P("@param {", typ, "} value The value.")
+		g.indent = ""
+		g.P(" */")
+		g.P(m.jsTypeName, ".prototype.set", fieldName, " = function(value) {")
+		g.In()
+		g.P("this.set$Value(", field.Number, ", value);")
+		g.Out()
+		g.P("};")
+		g.P()
+
+		g.P("/**")
+		g.indent = " * "
+		g.P("Gets the value of the ", jsonName, " field.")
+		g.P("@return {?", typ, "} The value.")
+		g.indent = ""
+		g.P(" */")
+		g.P(m.jsTypeName, ".prototype.get", fieldName, " = function() {")
+		g.In()
+		g.P("return /** @type {?", typ, "} */ (this.get$Value(", field.Number, "));")
+		g.Out()
+		g.P("};")
+		g.P()
+	}
 }
 
 func (m *messageGenerator) generateCanonical(message *Descriptor) {
@@ -1788,7 +1790,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		}
 		fieldname := "Default_" + jsTypeName + "_" + CamelCase(*field.Name)
 		defNames[field] = fieldname
-		typename, _ := g.GoType(message, field)
+		typename, _ := g.JsType(message, field)
 		if typename[0] == '*' {
 			typename = typename[1:]
 		}
@@ -1839,7 +1841,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 	var getters []getterSymbol
 	for _, field := range message.Field {
 		fname := fieldNames[field]
-		typename, _ := g.GoType(message, field)
+		typename, _ := g.JsType(message, field)
 		if t, ok := mapFieldTypes[field]; ok {
 			typename = t
 		}
@@ -1978,7 +1980,7 @@ func (g *Generator) generateExtension(ext *ExtensionDescriptor) {
 	extDesc := g.ObjectNamed(*ext.Extendee).(*Descriptor)
 	extendedType := "*" + g.TypeName(extDesc)
 	field := ext.FieldDescriptorProto
-	fieldType, wireType := g.GoType(ext.parent, field)
+	fieldType, wireType := g.JsType(ext.parent, field)
 	tag := g.goTag(extDesc, field, wireType)
 	g.RecordTypeUse(*ext.Extendee)
 	if n := ext.FieldDescriptorProto.TypeName; n != nil {

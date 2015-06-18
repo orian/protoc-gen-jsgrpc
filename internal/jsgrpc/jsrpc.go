@@ -31,23 +31,15 @@
 
 // Package jsgrpc outputs JavaScript gRPC service descriptions in Go code.
 // It runs as a plugin for the Go protocol buffer compiler plugin.
-// It is linked in to protoc-gen-go.
+// It is linked in to protoc-gen-jsgrpc.
 package jsgrpc
 
 import (
 	"fmt"
-	"strings"
 	"log"
 
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/orian/protoc-gen-jsgrpc/generator"
-)
-
-// Paths for packages used by code generated in this file,
-// relative to the import_prefix of the generator.Generator.
-const (
-	contextPkgPath = "golang.org/x/net/context"
-	jsgrpcPkgPath    = "github.com/orian/jsgrpc"
 )
 
 func init() {
@@ -65,19 +57,9 @@ func (g *jsgrpc) Name() string {
 	return "jsgrpc"
 }
 
-// The names for packages imported in the generated code.
-// They may vary from the final path component of the import path
-// if the name is used by other packages.
-var (
-	contextPkg string
-	jsgrpcPkg    string
-)
-
 // Init initializes the plugin.
 func (g *jsgrpc) Init(gen *generator.Generator) {
 	g.gen = gen
-	contextPkg = generator.RegisterUniquePackageName("context", nil)
-	jsgrpcPkg = generator.RegisterUniquePackageName("jsgrpc", nil)
 }
 
 // Given a type name defined in a .proto, return its object.
@@ -109,13 +91,6 @@ func (g *jsgrpc) GenerateImports(file *generator.FileDescriptor) {
 	}
 	g.P("goog.require('orian.jsrpc.Client');")
 }
-
-// reservedClientName records whether a client name is reserved on the client side.
-var reservedClientName = map[string]bool{
-// TODO: do we need any in gRPC?
-}
-
-func unexport(s string) string { return strings.ToLower(s[:1]) + s[1:] }
 
 // generateService generates all the code for the named service.
 func (g *jsgrpc) generateService(file *generator.FileDescriptor, service *pb.ServiceDescriptorProto, index int) {
@@ -164,28 +139,4 @@ func (g *jsgrpc) generateClientMethod(servName, fullServName string, method *pb.
 	g.P("this.call_('", methName, "', arg, success, failure);")
 	g.gen.Out()
 	g.P("};")
-}
-
-// generateServerSignature returns the server-side signature for a method.
-func (g *jsgrpc) generateServerSignature(servName string, method *pb.MethodDescriptorProto) string {
-	origMethName := method.GetName()
-	methName := generator.CamelCase(origMethName)
-	if reservedClientName[methName] {
-		methName += "_"
-	}
-
-	var reqArgs []string
-	ret := "error"
-	if !method.GetServerStreaming() && !method.GetClientStreaming() {
-		reqArgs = append(reqArgs, contextPkg+".Context")
-		ret = "(*" + g.typeName(method.GetOutputType()) + ", error)"
-	}
-	if !method.GetClientStreaming() {
-		reqArgs = append(reqArgs, "*"+g.typeName(method.GetInputType()))
-	}
-	if method.GetServerStreaming() || method.GetClientStreaming() {
-		reqArgs = append(reqArgs, servName+"_"+generator.CamelCase(origMethName)+"Server")
-	}
-
-	return methName + "(" + strings.Join(reqArgs, ", ") + ") " + ret
 }

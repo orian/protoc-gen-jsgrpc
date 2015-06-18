@@ -32,7 +32,7 @@ goog.inherits(my.test.Request, goog.proto2.Message);
 
 /**
  * Sets the value of the multi2 field.
- * @param {*multitest.Multi2} value The value.
+ * @param {multitest.Multi2} value The value.
  */
 multitest.Multi1.prototype.setMulti2 = function(value) {
   this.set$Value(1, value);
@@ -40,10 +40,10 @@ multitest.Multi1.prototype.setMulti2 = function(value) {
 
 /**
  * Gets the value of the multi2 field.
- * @return {?*multitest.Multi2} The value.
+ * @return {?multitest.Multi2} The value.
  */
 multitest.Multi1.prototype.getMulti2 = function() {
-  return /** @type {?*multitest.Multi2} */ (this.get$Value(1));
+  return /** @type {?multitest.Multi2} */ (this.get$Value(1));
 };
 
 /**
