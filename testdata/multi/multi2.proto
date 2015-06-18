@@ -44,3 +44,16 @@ message Multi2 {
   optional Color color = 2;
 }
 
+message SearchRequest {
+  optional string query = 1;
+}
+
+message SearchResponse {
+  repeated string result = 1;
+}
+
+// Service comment.
+service SearchService {
+  // Comment for method.
+  rpc Search (SearchRequest) returns (SearchResponse);
+}

@@ -36,9 +36,8 @@ package jsgrpc
 
 import (
 	"fmt"
-	"path"
-	"strconv"
 	"strings"
+	"log"
 
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/orian/protoc-gen-jsgrpc/generator"
@@ -108,15 +107,7 @@ func (g *jsgrpc) GenerateImports(file *generator.FileDescriptor) {
 	if len(file.FileDescriptorProto.Service) == 0 {
 		return
 	}
-	g.P("import (")
-	g.P(contextPkg, " ", strconv.Quote(path.Join(g.gen.ImportPrefix, contextPkgPath)))
-	g.P(jsgrpcPkg, " ", strconv.Quote(path.Join(g.gen.ImportPrefix, jsgrpcPkgPath)))
-	g.P(")")
-	g.P()
-	g.P("// Reference imports to suppress errors if they are not otherwise used.")
-	g.P("var _ ", contextPkg, ".Context")
-	g.P("var _ ", jsgrpcPkg, ".ClientConn")
-	g.P()
+	g.P("goog.require('orian.jsrpc.Client');")
 }
 
 // reservedClientName records whether a client name is reserved on the client side.
@@ -134,204 +125,45 @@ func (g *jsgrpc) generateService(file *generator.FileDescriptor, service *pb.Ser
 	fullServName := file.GetPackage() + "." + origServName
 	servName := generator.CamelCase(origServName)
 
-	g.P()
-	g.P("// Client API for ", servName, " service")
-	g.P()
-
-	// Client interface.
-	g.P("type ", servName, "Client interface {")
-	for i, method := range service.Method {
-		g.gen.PrintComments(fmt.Sprintf("%s,2,%d", path, i)) // 2 means method in a service.
-		g.P(g.generateClientSignature(servName, method))
-	}
-	g.P("}")
-	g.P()
-
-	// Client structure.
-	g.P("type ", unexport(servName), "Client struct {")
-	g.P("cc *", jsgrpcPkg, ".ClientConn")
-	g.P("}")
+	g.P("/**")
+	g.P(" * A ", servName, " client.")
+	g.P(" * @constructor")
+	g.P(" * @extends {orian.jsgrpc.Client}")
+	g.P(" * @final")
+	g.P(" */")
+	g.P(fullServName, " = function() {")
+	g.gen.In()
+	g.P("orian.jsgrpc.Client.call(this);")
+	g.gen.Out()
+	g.P("};")
 	g.P()
 
-	// NewClient factory.
-	g.P("func New", servName, "Client (cc *", jsgrpcPkg, ".ClientConn) ", servName, "Client {")
-	g.P("return &", unexport(servName), "Client{cc}")
-	g.P("}")
-	g.P()
-
-	var methodIndex, streamIndex int
-	serviceDescVar := "_" + servName + "_serviceDesc"
 	// Client method implementations.
-	for _, method := range service.Method {
-		var descExpr string
-		if !method.GetServerStreaming() && !method.GetClientStreaming() {
-			// Unary RPC method
-			descExpr = fmt.Sprintf("&%s.Methods[%d]", serviceDescVar, methodIndex)
-			methodIndex++
-		} else {
-			// Streaming RPC method
-			descExpr = fmt.Sprintf("&%s.Streams[%d]", serviceDescVar, streamIndex)
-			streamIndex++
-		}
-		g.generateClientMethod(servName, fullServName, serviceDescVar, method, descExpr)
-	}
-
-	g.P("// Server API for ", servName, " service")
-	g.P()
-
-	// Server interface.
-	serverType := servName + "Server"
-	g.P("type ", serverType, " interface {")
 	for i, method := range service.Method {
-		g.gen.PrintComments(fmt.Sprintf("%s,2,%d", path, i)) // 2 means method in a service.
-		g.P(g.generateServerSignature(servName, method))
-	}
-	g.P("}")
-	g.P()
-
-	// Server registration.
-	g.P("func Register", servName, "Server(s *", jsgrpcPkg, ".Server, srv ", serverType, ") {")
-	g.P("s.RegisterService(&", serviceDescVar, `, srv)`)
-	g.P("}")
-	g.P()
-
-	// Server handler implementations.
-	var handlerNames []string
-	for _, method := range service.Method {
-		hname := g.generateServerMethod(servName, method)
-		handlerNames = append(handlerNames, hname)
-	}
-
-	// Service descriptor.
-	g.P("var ", serviceDescVar, " = ", jsgrpcPkg, ".ServiceDesc {")
-	g.P("ServiceName: ", strconv.Quote(fullServName), ",")
-	g.P("HandlerType: (*", serverType, ")(nil),")
-	g.P("Methods: []", jsgrpcPkg, ".MethodDesc{")
-	for i, method := range service.Method {
+		methodName := generator.CamelCase(method.GetName())
 		if method.GetServerStreaming() || method.GetClientStreaming() {
-			continue
+			// Streaming RPC method
+			log.Printf("streaming not suported %s", fullServName, methodName)
 		}
-		g.P("{")
-		g.P("MethodName: ", strconv.Quote(method.GetName()), ",")
-		g.P("Handler: ", handlerNames[i], ",")
-		g.P("},")
+		g.gen.PrintComments(fmt.Sprintf("%s,2,%d", path, i)) // 2 means method in a service.
+		g.generateClientMethod(servName, fullServName, method)
 	}
-	g.P("},")
-	g.P("Streams: []", jsgrpcPkg, ".StreamDesc{")
-	for i, method := range service.Method {
-		if !method.GetServerStreaming() && !method.GetClientStreaming() {
-			continue
-		}
-		g.P("{")
-		g.P("StreamName: ", strconv.Quote(method.GetName()), ",")
-		g.P("Handler: ", handlerNames[i], ",")
-		if method.GetServerStreaming() {
-			g.P("ServerStreams: true,")
-		}
-		if method.GetClientStreaming() {
-			g.P("ClientStreams: true,")
-		}
-		g.P("},")
-	}
-	g.P("},")
-	g.P("}")
-	g.P()
 }
 
-// generateClientSignature returns the client-side signature for a method.
-func (g *jsgrpc) generateClientSignature(servName string, method *pb.MethodDescriptorProto) string {
-	origMethName := method.GetName()
-	methName := generator.CamelCase(origMethName)
-	if reservedClientName[methName] {
-		methName += "_"
-	}
-	reqArg := ", in *" + g.typeName(method.GetInputType())
-	if method.GetClientStreaming() {
-		reqArg = ""
-	}
-	respName := "*" + g.typeName(method.GetOutputType())
-	if method.GetServerStreaming() || method.GetClientStreaming() {
-		respName = servName + "_" + generator.CamelCase(origMethName) + "Client"
-	}
-	return fmt.Sprintf("%s(ctx %s.Context%s, opts ...%s.CallOption) (%s, error)", methName, contextPkg, reqArg, jsgrpcPkg, respName)
-}
-
-func (g *jsgrpc) generateClientMethod(servName, fullServName, serviceDescVar string, method *pb.MethodDescriptorProto, descExpr string) {
-	sname := fmt.Sprintf("/%s/%s", fullServName, method.GetName())
+func (g *jsgrpc) generateClientMethod(servName, fullServName string, method *pb.MethodDescriptorProto) {
 	methName := generator.CamelCase(method.GetName())
 	inType := g.typeName(method.GetInputType())
 	outType := g.typeName(method.GetOutputType())
-
-	g.P("func (c *", unexport(servName), "Client) ", g.generateClientSignature(servName, method), "{")
-	if !method.GetServerStreaming() && !method.GetClientStreaming() {
-		g.P("out := new(", outType, ")")
-		// TODO: Pass descExpr to Invoke.
-		g.P("err := ", jsgrpcPkg, `.Invoke(ctx, "`, sname, `", in, out, c.cc, opts...)`)
-		g.P("if err != nil { return nil, err }")
-		g.P("return out, nil")
-		g.P("}")
-		g.P()
-		return
-	}
-	streamType := unexport(servName) + methName + "Client"
-	g.P("stream, err := ", jsgrpcPkg, ".NewClientStream(ctx, ", descExpr, `, c.cc, "`, sname, `", opts...)`)
-	g.P("if err != nil { return nil, err }")
-	g.P("x := &", streamType, "{stream}")
-	if !method.GetClientStreaming() {
-		g.P("if err := x.ClientStream.SendProto(in); err != nil { return nil, err }")
-		g.P("if err := x.ClientStream.CloseSend(); err != nil { return nil, err }")
-	}
-	g.P("return x, nil")
-	g.P("}")
-	g.P()
-
-	genSend := method.GetClientStreaming()
-	genRecv := method.GetServerStreaming()
-	genCloseAndRecv := !method.GetServerStreaming()
-
-	// Stream auxiliary types and methods.
-	g.P("type ", servName, "_", methName, "Client interface {")
-	if genSend {
-		g.P("Send(*", inType, ") error")
-	}
-	if genRecv {
-		g.P("Recv() (*", outType, ", error)")
-	}
-	if genCloseAndRecv {
-		g.P("CloseAndRecv() (*", outType, ", error)")
-	}
-	g.P(jsgrpcPkg, ".ClientStream")
-	g.P("}")
-	g.P()
-
-	g.P("type ", streamType, " struct {")
-	g.P(jsgrpcPkg, ".ClientStream")
-	g.P("}")
-	g.P()
-
-	if genSend {
-		g.P("func (x *", streamType, ") Send(m *", inType, ") error {")
-		g.P("return x.ClientStream.SendProto(m)")
-		g.P("}")
-		g.P()
-	}
-	if genRecv {
-		g.P("func (x *", streamType, ") Recv() (*", outType, ", error) {")
-		g.P("m := new(", outType, ")")
-		g.P("if err := x.ClientStream.RecvProto(m); err != nil { return nil, err }")
-		g.P("return m, nil")
-		g.P("}")
-		g.P()
-	}
-	if genCloseAndRecv {
-		g.P("func (x *", streamType, ") CloseAndRecv() (*", outType, ", error) {")
-		g.P("if err := x.ClientStream.CloseSend(); err != nil { return nil, err }")
-		g.P("m := new(", outType, ")")
-		g.P("if err := x.ClientStream.RecvProto(m); err != nil { return nil, err }")
-		g.P("return m, nil")
-		g.P("}")
-		g.P()
-	}
+	g.P("/** A ", methName, " API call.")
+	g.P(" * @param {", inType, "}")
+	g.P(" * @param {function(", outType, ")}")
+	g.P(" * @param {function(", outType, ")}")
+	g.P(" */")
+	g.P(fullServName, ".prototype.", methName, " = function(arg, success, failure) {")
+	g.gen.In()
+	g.P("this.call_('", methName, "', arg, success, failure);")
+	g.gen.Out()
+	g.P("};")
 }
 
 // generateServerSignature returns the server-side signature for a method.
@@ -356,81 +188,4 @@ func (g *jsgrpc) generateServerSignature(servName string, method *pb.MethodDescr
 	}
 
 	return methName + "(" + strings.Join(reqArgs, ", ") + ") " + ret
-}
-
-func (g *jsgrpc) generateServerMethod(servName string, method *pb.MethodDescriptorProto) string {
-	methName := generator.CamelCase(method.GetName())
-	hname := fmt.Sprintf("_%s_%s_Handler", servName, methName)
-	inType := g.typeName(method.GetInputType())
-	outType := g.typeName(method.GetOutputType())
-
-	if !method.GetServerStreaming() && !method.GetClientStreaming() {
-		g.P("func ", hname, "(srv interface{}, ctx ", contextPkg, ".Context, buf []byte) (", g.gen.Pkg["proto"], ".Message, error) {")
-		g.P("in := new(", inType, ")")
-		g.P("if err := ", g.gen.Pkg["proto"], ".Unmarshal(buf, in); err != nil { return nil, err }")
-		g.P("out, err := srv.(", servName, "Server).", methName, "(ctx, in)")
-		g.P("if err != nil { return nil, err }")
-		g.P("return out, nil")
-		g.P("}")
-		g.P()
-		return hname
-	}
-	streamType := unexport(servName) + methName + "Server"
-	g.P("func ", hname, "(srv interface{}, stream ", jsgrpcPkg, ".ServerStream) error {")
-	if !method.GetClientStreaming() {
-		g.P("m := new(", inType, ")")
-		g.P("if err := stream.RecvProto(m); err != nil { return err }")
-		g.P("return srv.(", servName, "Server).", methName, "(m, &", streamType, "{stream})")
-	} else {
-		g.P("return srv.(", servName, "Server).", methName, "(&", streamType, "{stream})")
-	}
-	g.P("}")
-	g.P()
-
-	genSend := method.GetServerStreaming()
-	genSendAndClose := !method.GetServerStreaming()
-	genRecv := method.GetClientStreaming()
-
-	// Stream auxiliary types and methods.
-	g.P("type ", servName, "_", methName, "Server interface {")
-	if genSend {
-		g.P("Send(*", outType, ") error")
-	}
-	if genSendAndClose {
-		g.P("SendAndClose(*", outType, ") error")
-	}
-	if genRecv {
-		g.P("Recv() (*", inType, ", error)")
-	}
-	g.P(jsgrpcPkg, ".ServerStream")
-	g.P("}")
-	g.P()
-
-	g.P("type ", streamType, " struct {")
-	g.P(jsgrpcPkg, ".ServerStream")
-	g.P("}")
-	g.P()
-
-	if genSend {
-		g.P("func (x *", streamType, ") Send(m *", outType, ") error {")
-		g.P("return x.ServerStream.SendProto(m)")
-		g.P("}")
-		g.P()
-	}
-	if genSendAndClose {
-		g.P("func (x *", streamType, ") SendAndClose(m *", outType, ") error {")
-		g.P("return x.ServerStream.SendProto(m)")
-		g.P("}")
-		g.P()
-	}
-	if genRecv {
-		g.P("func (x *", streamType, ") Recv() (*", inType, ", error) {")
-		g.P("m := new(", inType, ")")
-		g.P("if err := x.ServerStream.RecvProto(m); err != nil { return nil, err }")
-		g.P("return m, nil")
-		g.P("}")
-		g.P()
-	}
-
-	return hname
 }
