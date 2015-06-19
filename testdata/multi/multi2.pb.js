@@ -67,6 +67,31 @@ multitest.Multi2.prototype.getColor = function() {
   return /** @type {?multitest.Multi2.Color} */ (this.get$Value(2));
 };
 
+/** @override */
+multitest.Multi2.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'Multi2',
+        fullName: 'multitest.Multi2'
+      },
+      1: {
+        name: 'required_value',
+        fieldType: goog.proto2.Message.FieldType.INT32,
+        type: Number
+      },
+      2: {
+        name: 'color',
+        fieldType: goog.proto2.Message.FieldType.ENUM,
+        type: multitest.Multi2.Color
+      }
+    };
+    multitest.Multi2.descriptor_ = goog.proto2.Message.createDescriptor(multitest.Multi2, descriptorObj);
+  }
+  return multitest.Multi2.descriptor_;
+};
+
 /**
  * Message multitest.SearchRequest.
  * @constructor
@@ -92,6 +117,26 @@ multitest.SearchRequest.prototype.setQuery = function(value) {
  */
 multitest.SearchRequest.prototype.getQuery = function() {
   return /** @type {?String} */ (this.get$Value(1));
+};
+
+/** @override */
+multitest.SearchRequest.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'SearchRequest',
+        fullName: 'multitest.SearchRequest'
+      },
+      1: {
+        name: 'query',
+        fieldType: goog.proto2.Message.FieldType.STRING,
+        type: String
+      }
+    };
+    multitest.SearchRequest.descriptor_ = goog.proto2.Message.createDescriptor(multitest.SearchRequest, descriptorObj);
+  }
+  return multitest.SearchRequest.descriptor_;
 };
 
 /**
@@ -137,8 +182,30 @@ multitest.SearchResponse.prototype.clearResult = function() {
   return this.clear$Field(1);
 };
 
+/** @override */
+multitest.SearchResponse.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'SearchResponse',
+        fullName: 'multitest.SearchResponse'
+      },
+      1: {
+        name: 'result',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.STRING,
+        type: String
+      }
+    };
+    multitest.SearchResponse.descriptor_ = goog.proto2.Message.createDescriptor(multitest.SearchResponse, descriptorObj);
+  }
+  return multitest.SearchResponse.descriptor_;
+};
+
 /**
  * A SearchService client.
+ * @param {String} baseUrl is prefix for API calls.
  * @constructor
  * @extends {orian.jsgrpc.Client}
  * @final

@@ -48,3 +48,23 @@ multitest.Multi3.prototype.getHatType = function() {
   return /** @type {?multitest.Multi3.HatType} */ (this.get$Value(1));
 };
 
+/** @override */
+multitest.Multi3.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'Multi3',
+        fullName: 'multitest.Multi3'
+      },
+      1: {
+        name: 'hat_type',
+        fieldType: goog.proto2.Message.FieldType.ENUM,
+        type: multitest.Multi3.HatType
+      }
+    };
+    multitest.Multi3.descriptor_ = goog.proto2.Message.createDescriptor(multitest.Multi3, descriptorObj);
+  }
+  return multitest.Multi3.descriptor_;
+};
+

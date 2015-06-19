@@ -271,7 +271,7 @@ test.TestAllTypes.prototype.getOptionalString = function() {
 
 /**
  * Sets the value of the optional_bytes field.
- * @param {[]byte} value The value.
+ * @param {String} value The value.
  */
 test.TestAllTypes.prototype.setOptionalBytes = function(value) {
   this.set$Value(15, value);
@@ -279,10 +279,10 @@ test.TestAllTypes.prototype.setOptionalBytes = function(value) {
 
 /**
  * Gets the value of the optional_bytes field.
- * @return {?[]byte} The value.
+ * @return {?String} The value.
  */
 test.TestAllTypes.prototype.getOptionalBytes = function() {
-  return /** @type {?[]byte} */ (this.get$Value(15));
+  return /** @type {?String} */ (this.get$Value(15));
 };
 
 /**
@@ -783,7 +783,7 @@ test.TestAllTypes.prototype.clearRepeatedString = function() {
 
 /**
  * Adds the value to the repeated_bytes repeated field.
- * @param {Array.<[]byte>} value The value.
+ * @param {Array.<String>} value The value.
  */
 test.TestAllTypes.prototype.addRepeatedBytes = function(value) {
   this.add$Value(45, value);
@@ -792,10 +792,10 @@ test.TestAllTypes.prototype.addRepeatedBytes = function(value) {
 /**
  * Gets the value of the repeated_bytes field.
  * @param {!number} index of the element.
- * @return {?Array.<[]byte>} The value.
+ * @return {?Array.<String>} The value.
  */
 test.TestAllTypes.prototype.getRepeatedBytes = function(index) {
-  return /** @type {?Array.<[]byte>} */ (this.get$Value(45, index));
+  return /** @type {?Array.<String>} */ (this.get$Value(45, index));
 };
 
 /**
@@ -909,6 +909,219 @@ test.TestAllTypes.prototype.clearRepeatedNestedEnum = function() {
   return this.clear$Field(49);
 };
 
+/** @override */
+test.TestAllTypes.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'TestAllTypes',
+        fullName: 'test.TestAllTypes'
+      },
+      1: {
+        name: 'optional_int32',
+        fieldType: goog.proto2.Message.FieldType.INT32,
+        type: Number
+      },
+      2: {
+        name: 'optional_int64',
+        fieldType: goog.proto2.Message.FieldType.INT64,
+        type: Number
+      },
+      3: {
+        name: 'optional_uint32',
+        fieldType: goog.proto2.Message.FieldType.UINT32,
+        type: Number
+      },
+      4: {
+        name: 'optional_uint64',
+        fieldType: goog.proto2.Message.FieldType.UINT64,
+        type: Number
+      },
+      5: {
+        name: 'optional_sint32',
+        fieldType: goog.proto2.Message.FieldType.SINT32,
+        type: Number
+      },
+      6: {
+        name: 'optional_sint64',
+        fieldType: goog.proto2.Message.FieldType.SINT64,
+        type: Number
+      },
+      7: {
+        name: 'optional_fixed32',
+        fieldType: goog.proto2.Message.FieldType.FIXED64,
+        type: Number
+      },
+      8: {
+        name: 'optional_fixed64',
+        fieldType: goog.proto2.Message.FieldType.FIXED64,
+        type: Number
+      },
+      9: {
+        name: 'optional_sfixed32',
+        fieldType: goog.proto2.Message.FieldType.SFIXED32,
+        type: Number
+      },
+      10: {
+        name: 'optional_sfixed64',
+        fieldType: goog.proto2.Message.FieldType.SFIXED64,
+        type: Number
+      },
+      11: {
+        name: 'optional_float',
+        fieldType: goog.proto2.Message.FieldType.FLOAT,
+        type: Number
+      },
+      12: {
+        name: 'optional_double',
+        fieldType: goog.proto2.Message.FieldType.DOUBLE,
+        type: Number
+      },
+      13: {
+        name: 'optional_bool',
+        fieldType: goog.proto2.Message.FieldType.BOOL,
+        type: Boolean
+      },
+      14: {
+        name: 'optional_string',
+        fieldType: goog.proto2.Message.FieldType.STRING,
+        type: String
+      },
+      15: {
+        name: 'optional_bytes',
+        fieldType: goog.proto2.Message.FieldType.BYTES,
+        type: String
+      },
+      16: {
+        name: 'optionalgroup',
+        fieldType: goog.proto2.Message.FieldType.GROUP,
+        type: test.TestAllTypes.OptionalGroup
+      },
+      17: {
+        name: 'optional_nested_message',
+        fieldType: goog.proto2.Message.FieldType.MESSAGE,
+        type: test.TestAllTypes.NestedMessage
+      },
+      18: {
+        name: 'optional_nested_enum',
+        fieldType: goog.proto2.Message.FieldType.ENUM,
+        type: test.TestAllTypes.NestedEnum
+      },
+      19: {
+        name: 'repeated_int32',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.INT32,
+        type: Number
+      },
+      20: {
+        name: 'repeated_int64',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.INT64,
+        type: Number
+      },
+      21: {
+        name: 'repeated_uint32',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.UINT32,
+        type: Number
+      },
+      22: {
+        name: 'repeated_uint64',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.UINT64,
+        type: Number
+      },
+      23: {
+        name: 'repeated_sint32',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.SINT32,
+        type: Number
+      },
+      24: {
+        name: 'repeated_sint64',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.SINT64,
+        type: Number
+      },
+      25: {
+        name: 'repeated_fixed32',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.FIXED64,
+        type: Number
+      },
+      26: {
+        name: 'repeated_fixed64',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.FIXED64,
+        type: Number
+      },
+      27: {
+        name: 'repeated_sfixed32',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.SFIXED32,
+        type: Number
+      },
+      28: {
+        name: 'repeated_sfixed64',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.SFIXED64,
+        type: Number
+      },
+      29: {
+        name: 'repeated_float',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.FLOAT,
+        type: Number
+      },
+      30: {
+        name: 'repeated_double',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.DOUBLE,
+        type: Number
+      },
+      31: {
+        name: 'repeated_bool',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.BOOL,
+        type: Boolean
+      },
+      32: {
+        name: 'repeated_string',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.STRING,
+        type: String
+      },
+      33: {
+        name: 'repeated_bytes',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.BYTES,
+        type: String
+      },
+      34: {
+        name: 'repeatedgroup',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.GROUP,
+        type: test.TestAllTypes.RepeatedGroup
+      },
+      35: {
+        name: 'repeated_nested_message',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.MESSAGE,
+        type: test.TestAllTypes.NestedMessage
+      },
+      36: {
+        name: 'repeated_nested_enum',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.ENUM,
+        type: test.TestAllTypes.NestedEnum
+      }
+    };
+    test.TestAllTypes.descriptor_ = goog.proto2.Message.createDescriptor(test.TestAllTypes, descriptorObj);
+  }
+  return test.TestAllTypes.descriptor_;
+};
+
 /**
  * Message test.TestAllTypes.NestedMessage.
  * @constructor
@@ -936,6 +1149,26 @@ test.TestAllTypes.NestedMessage.prototype.getB = function() {
   return /** @type {?Number} */ (this.get$Value(1));
 };
 
+/** @override */
+test.TestAllTypes.NestedMessage.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'NestedMessage',
+        fullName: 'test.TestAllTypes.NestedMessage'
+      },
+      1: {
+        name: 'b',
+        fieldType: goog.proto2.Message.FieldType.INT32,
+        type: Number
+      }
+    };
+    test.TestAllTypes.NestedMessage.descriptor_ = goog.proto2.Message.createDescriptor(test.TestAllTypes.NestedMessage, descriptorObj);
+  }
+  return test.TestAllTypes.NestedMessage.descriptor_;
+};
+
 /**
  * Message test.TestAllTypes.OptionalGroup.
  * @constructor
@@ -961,6 +1194,26 @@ test.TestAllTypes.OptionalGroup.prototype.setA = function(value) {
  */
 test.TestAllTypes.OptionalGroup.prototype.getA = function() {
   return /** @type {?Number} */ (this.get$Value(17));
+};
+
+/** @override */
+test.TestAllTypes.OptionalGroup.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'OptionalGroup',
+        fullName: 'test.TestAllTypes.OptionalGroup'
+      },
+      1: {
+        name: 'a',
+        fieldType: goog.proto2.Message.FieldType.INT32,
+        type: Number
+      }
+    };
+    test.TestAllTypes.OptionalGroup.descriptor_ = goog.proto2.Message.createDescriptor(test.TestAllTypes.OptionalGroup, descriptorObj);
+  }
+  return test.TestAllTypes.OptionalGroup.descriptor_;
 };
 
 /**
@@ -1004,5 +1257,26 @@ test.TestAllTypes.RepeatedGroup.prototype.countA = function() {
  */
 test.TestAllTypes.RepeatedGroup.prototype.clearA = function() {
   return this.clear$Field(47);
+};
+
+/** @override */
+test.TestAllTypes.RepeatedGroup.prototype.getDescriptor = function {
+  if (!my.test.Request.descriptor_) {
+    // The descriptor is created lazily when we instantiate a new instance.
+    var descriptorObj = {
+      0: {
+        name: 'RepeatedGroup',
+        fullName: 'test.TestAllTypes.RepeatedGroup'
+      },
+      1: {
+        name: 'a',
+        repeated: true,
+        fieldType: goog.proto2.Message.FieldType.INT32,
+        type: Number
+      }
+    };
+    test.TestAllTypes.RepeatedGroup.descriptor_ = goog.proto2.Message.createDescriptor(test.TestAllTypes.RepeatedGroup, descriptorObj);
+  }
+  return test.TestAllTypes.RepeatedGroup.descriptor_;
 };
 
