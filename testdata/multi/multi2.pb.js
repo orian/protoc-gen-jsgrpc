@@ -143,8 +143,8 @@ multitest.SearchResponse.prototype.clearResult = function() {
  * @extends {orian.jsgrpc.Client}
  * @final
  */
-multitest.SearchService = function() {
-  orian.jsgrpc.Client.call(this);
+multitest.SearchService = function(baseUrl) {
+  orian.jsgrpc.Client.call(this, baseUrl, SearchService);
 };
 
 // Comment for method.
@@ -154,5 +154,5 @@ multitest.SearchService = function() {
  * @param {function(multitest.SearchResponse)}
  */
 multitest.SearchService.prototype.Search = function(arg, success, failure) {
-  this.call_('Search', arg, success, failure);
+  this.apiCall_('Search', arg, success, failure);
 };

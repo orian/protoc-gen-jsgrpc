@@ -29,17 +29,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-goog.provide("my.test");
+goog.provide("my.test.HatType");
+goog.provide("my.test.Days");
+goog.provide("my.test.Request");
+goog.provide("my.test.Request.Color");
+goog.provide("my.test.Reply");
+goog.provide("my.test.Reply.Entry");
+goog.provide("my.test.Reply.Entry.Game");
+goog.provide("my.test.OtherBase");
 
 goog.require("multi.multi1");
-//import "imp.proto";
-import "multi/multi1.proto";  // unused import
 
 /*
  * Enum...
  * @enum {number}
  */
-test.HatType = {
+my.test.HatType = {
   // deliberately skipping 0
   FEDORA: 1,
   FEZ: 2
@@ -49,7 +54,7 @@ test.HatType = {
  * This enum represents days of the week.
  * @enum {number}
  */
-test.Days = {
+my.test.Days = {
   // option allow_alias = true;
   MONDAY: 1,
   TUESDAY: 2,
@@ -60,21 +65,21 @@ test.Days = {
  * This is a message that might be sent somewhere.
  * @constructor
  */
-test.Request = function() {
+my.test.Request = function() {
   /*
    * @type {Array.<!number>}
    */
   this.key = [];
 
   /*
-   * @type {test.Request.Color}
+   * @type {my.test.Request.Color}
    */
   this.hue = null;
 
   /*
-   * @type {test.HatType}
+   * @type {my.test.HatType}
    */
-  this.hat = test.HatType.FEDORA;
+  this.hat = my.test.HatType.FEDORA;
 
   /*
    * @type {number}
@@ -92,7 +97,7 @@ test.Request = function() {
   this.nameMapping = {};
 
   /*
-   * @type {Object.<number, test.Reply>}
+   * @type {Object.<number, my.test.Reply>}
    */
   this.msgMapping = {};
 
@@ -130,7 +135,7 @@ test.Request = function() {
 /*
  * @enum {number}
  */
-test.Request.Color = {
+my.test.Request.Color = {
   RED: 0,
   GREEN: 1,
   BLUE: 2
@@ -140,9 +145,9 @@ test.Request.Color = {
 /*
  * @constructor
  */
-test.Reply = function() {
+my.test.Reply = function() {
   /*
-   * @type {Array.<test.Reply.Entry>}
+   * @type {Array.<my.test.Reply.Entry>}
    */
   this.found = [];
 
@@ -157,7 +162,7 @@ test.Reply = function() {
 /*
  * @constructor
  */
-test.Reply.Entry = function() {
+my.test.Reply.Entry = function() {
   /*
    * @type {!number}
    */
@@ -177,7 +182,7 @@ test.Reply.Entry = function() {
 /*
  * @enum {!number}
  */
-test.Reply.Entry.Game = {
+my.test.Reply.Entry.Game = {
   FOOTBALL: 1,
   TENNIS: 2
 };
@@ -185,7 +190,7 @@ test.Reply.Entry.Game = {
 /*
  * @constructor
  */
-test.OtherBase = function() {
+my.test.OtherBase = function() {
   /*
    * @type {string}
    */
