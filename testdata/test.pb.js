@@ -11,9 +11,14 @@ It is generated from these files:
 It has these top-level messages:
 	TestAllTypes
 */
-goog.provide('test');
+goog.provide('test.TestAllTypes');
+goog.provide('test.TestAllTypes.NestedEnum');
+goog.provide('test.TestAllTypes.NestedEnumNames');
+goog.provide('test.TestAllTypes.NestedMessage');
+goog.provide('test.TestAllTypes.OptionalGroup');
+goog.provide('test.TestAllTypes.RepeatedGroup');
 
-goog.require('goog.proto2');
+goog.require('goog.proto2.Message');
 
 
 
@@ -43,7 +48,7 @@ test.TestAllTypes.NestedEnumNames = {
 test.TestAllTypes = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(test.TestAllTypes, goog.proto2.Message);
 
 /**
  * Sets the value of the optional_int32 field.
@@ -910,8 +915,8 @@ test.TestAllTypes.prototype.clearRepeatedNestedEnum = function() {
 };
 
 /** @override */
-test.TestAllTypes.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+test.TestAllTypes.prototype.getDescriptor = function() {
+  if (!test.TestAllTypes.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {
@@ -1131,7 +1136,7 @@ test.TestAllTypes.prototype.getDescriptor = function {
 test.TestAllTypes.NestedMessage = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(test.TestAllTypes.NestedMessage, goog.proto2.Message);
 
 /**
  * Sets the value of the b field.
@@ -1150,8 +1155,8 @@ test.TestAllTypes.NestedMessage.prototype.getB = function() {
 };
 
 /** @override */
-test.TestAllTypes.NestedMessage.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+test.TestAllTypes.NestedMessage.prototype.getDescriptor = function() {
+  if (!test.TestAllTypes.NestedMessage.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {
@@ -1178,7 +1183,7 @@ test.TestAllTypes.NestedMessage.prototype.getDescriptor = function {
 test.TestAllTypes.OptionalGroup = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(test.TestAllTypes.OptionalGroup, goog.proto2.Message);
 
 /**
  * Sets the value of the a field.
@@ -1197,8 +1202,8 @@ test.TestAllTypes.OptionalGroup.prototype.getA = function() {
 };
 
 /** @override */
-test.TestAllTypes.OptionalGroup.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+test.TestAllTypes.OptionalGroup.prototype.getDescriptor = function() {
+  if (!test.TestAllTypes.OptionalGroup.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {
@@ -1225,7 +1230,7 @@ test.TestAllTypes.OptionalGroup.prototype.getDescriptor = function {
 test.TestAllTypes.RepeatedGroup = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(test.TestAllTypes.RepeatedGroup, goog.proto2.Message);
 
 /**
  * Adds the value to the a repeated field.
@@ -1260,8 +1265,8 @@ test.TestAllTypes.RepeatedGroup.prototype.clearA = function() {
 };
 
 /** @override */
-test.TestAllTypes.RepeatedGroup.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+test.TestAllTypes.RepeatedGroup.prototype.getDescriptor = function() {
+  if (!test.TestAllTypes.RepeatedGroup.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {

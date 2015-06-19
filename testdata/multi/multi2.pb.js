@@ -2,11 +2,16 @@
 // source: multi/multi2.proto
 // DO NOT EDIT!
 
-goog.provide('multitest');
+goog.provide('multitest.Multi2');
+goog.provide('multitest.Multi2.Color');
+goog.provide('multitest.Multi2.ColorNames');
+goog.provide('multitest.SearchRequest');
+goog.provide('multitest.SearchResponse');
+goog.provide('multitest.SearchService');
 
-goog.require('goog.proto2');
+goog.require('goog.proto2.Message');
 
-goog.require('orian.jsrpc.Client');
+goog.require('orian.grpc.Client');
 
 
 /**
@@ -33,7 +38,7 @@ multitest.Multi2.ColorNames = {
 multitest.Multi2 = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(multitest.Multi2, goog.proto2.Message);
 
 /**
  * Sets the value of the required_value field.
@@ -68,8 +73,8 @@ multitest.Multi2.prototype.getColor = function() {
 };
 
 /** @override */
-multitest.Multi2.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+multitest.Multi2.prototype.getDescriptor = function() {
+  if (!multitest.Multi2.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {
@@ -101,7 +106,7 @@ multitest.Multi2.prototype.getDescriptor = function {
 multitest.SearchRequest = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(multitest.SearchRequest, goog.proto2.Message);
 
 /**
  * Sets the value of the query field.
@@ -120,8 +125,8 @@ multitest.SearchRequest.prototype.getQuery = function() {
 };
 
 /** @override */
-multitest.SearchRequest.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+multitest.SearchRequest.prototype.getDescriptor = function() {
+  if (!multitest.SearchRequest.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {
@@ -148,7 +153,7 @@ multitest.SearchRequest.prototype.getDescriptor = function {
 multitest.SearchResponse = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(multitest.SearchResponse, goog.proto2.Message);
 
 /**
  * Adds the value to the result repeated field.
@@ -183,8 +188,8 @@ multitest.SearchResponse.prototype.clearResult = function() {
 };
 
 /** @override */
-multitest.SearchResponse.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+multitest.SearchResponse.prototype.getDescriptor = function() {
+  if (!multitest.SearchResponse.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {
@@ -204,15 +209,16 @@ multitest.SearchResponse.prototype.getDescriptor = function {
 };
 
 /**
- * A SearchService client.
+ * A SearchService service client.
  * @param {String} baseUrl is prefix for API calls.
  * @constructor
- * @extends {orian.jsgrpc.Client}
+ * @extends {orian.grpc.Client}
  * @final
  */
 multitest.SearchService = function(baseUrl) {
-  orian.jsgrpc.Client.call(this, baseUrl, SearchService);
+  orian.grpc.Client.call(this, baseUrl, 'multitest.SearchService');
 };
+goog.inherits(multitest.SearchService, orian.grpc.Client);
 
 // Comment for method.
 /** A Search API call.

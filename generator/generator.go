@@ -52,6 +52,7 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 
+	"sort"
 )
 
 // A Plugin provides functionality to add to the output during Go code generation,
@@ -443,6 +444,8 @@ type Generator struct {
 	usedPackages     map[string]bool   // Names of packages used in current file.
 	typeNameToObject map[string]Object // Key is a fully-qualified name in input syntax.
 	indent           string
+
+	exportedTypes    map[string]bool
 }
 
 // New creates a new generator and allocates the request and response protobufs.
@@ -1020,6 +1023,7 @@ func (g *Generator) FileOf(fd *descriptor.FileDescriptorProto) *FileDescriptor {
 func (g *Generator) generate(file *FileDescriptor) {
 	g.file = g.FileOf(file.FileDescriptorProto)
 	g.usedPackages = make(map[string]bool)
+	g.exportedTypes = make(map[string]bool)
 
 	for _, td := range g.file.imp {
 		g.generateImported(td)
@@ -1103,7 +1107,14 @@ func (g *Generator) generateHeader() {
 		g.P("*/")
 	}
 
-	g.P("goog.provide('", name, "');")
+	exports := make([]string, 0, len(g.exportedTypes))
+	for e := range g.exportedTypes {
+		exports = append(exports, e)
+	}
+	sort.Strings(exports)
+	for _,e := range exports {
+		g.P("goog.provide('", e, "');")
+	}
 	g.P()
 }
 
@@ -1144,7 +1155,8 @@ func (g *Generator) generateImports() {
 	// do, which is tricky when there's a plugin, just import it and
 	// reference it later. The same argument applies to the math package,
 	// for handling bit patterns for floating-point numbers.
-	g.P("goog.require('goog.proto2');")
+	g.P("goog.require('goog.proto2.Message');")
+
 	//	if !g.file.proto3 {
 	//		g.P("import " + g.Pkg["math"] + ` "math"`)
 	//	}
@@ -1224,6 +1236,7 @@ func (g *Generator) generateEnum(enum *EnumDescriptor) {
 	// The full type name, CamelCased.
 	jsTypeName := dottedSlice(typeName)
 	//	ccPrefix := enum.prefix()
+	g.ExportType(jsTypeName)
 
 	g.PrintComments(enum.path)
 	g.P("/**")
@@ -1240,13 +1253,14 @@ func (g *Generator) generateEnum(enum *EnumDescriptor) {
 			lineEnd = ""
 		}
 		g.P(name, ": ", e.Number, lineEnd)
-		g.file.addExport(enum, constOrVarSymbol{name, "const", jsTypeName})
 	}
 	g.Out()
 	g.P("};")
 	g.P()
 
-	g.P(jsTypeName, "Names = {")
+	enumNames := jsTypeName+"Names"
+	g.ExportType(enumNames)
+	g.P(enumNames, " = {")
 	g.In()
 	generated := make(map[int32]bool) // avoid duplicate values
 	lineEnd = ","
@@ -1350,6 +1364,11 @@ func (g *Generator) RecordTypeUse(t string) {
 	}
 }
 
+// type to be exported through goog.provide.
+func (g *Generator) ExportType(t string) {
+	g.exportedTypes[t] = true
+}
+
 // Method names that may be generated.  Fields with these names get an
 // underscore appended.
 var methodNames = [...]string{
@@ -1388,6 +1407,10 @@ func (g *messageGenerator) Init(message *Descriptor) {
 	g.fieldNames = make(map[*descriptor.FieldDescriptorProto]string)
 	g.fieldGetterNames = make(map[*descriptor.FieldDescriptorProto]string)
 	g.mapFieldTypes = make(map[*descriptor.FieldDescriptorProto]string)
+	if g.g.exportedTypes[g.jsTypeName] {
+		log.Fatalf("multiple types with name: %s", g.jsTypeName)
+	}
+	g.g.ExportType(g.jsTypeName)
 }
 
 func (g *messageGenerator) Generate(message *Descriptor) {
@@ -1513,7 +1536,7 @@ func (m *messageGenerator) generateCanonical(message *Descriptor) {
 	g.P("goog.proto2.Message.call(this);");
 	g.Out()
 	g.P("};")
-	g.P("goog.inherits(my.test.Request, goog.proto2.Message);");
+	g.P("goog.inherits(", m.jsTypeName, ", goog.proto2.Message);");
 	g.P()
 }
 
@@ -1522,9 +1545,9 @@ const fieldTypePrefix = "goog.proto2.Message.FieldType."
 func (m *messageGenerator) generateDescriptor(message *Descriptor) {
 	g := m.g
 	g.P("/** @override */")
-	g.P(m.jsTypeName, ".prototype.getDescriptor = function {")
+	g.P(m.jsTypeName, ".prototype.getDescriptor = function() {")
 	g.In()
-	g.P("if (!my.test.Request.descriptor_) {")
+	g.P("if (!", m.jsTypeName, ".descriptor_) {")
 	g.In()
 	g.P("// The descriptor is created lazily when we instantiate a new instance.")
 	g.P("var descriptorObj = {")

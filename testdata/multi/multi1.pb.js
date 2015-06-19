@@ -13,9 +13,9 @@ It is generated from these files:
 It has these top-level messages:
 	Multi1
 */
-goog.provide('multitest');
+goog.provide('multitest.Multi1');
 
-goog.require('goog.proto2');
+goog.require('goog.proto2.Message');
 
 
 
@@ -28,7 +28,7 @@ goog.require('goog.proto2');
 multitest.Multi1 = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(multitest.Multi1, goog.proto2.Message);
 
 /**
  * Sets the value of the multi2 field.
@@ -79,8 +79,8 @@ multitest.Multi1.prototype.getHatType = function() {
 };
 
 /** @override */
-multitest.Multi1.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+multitest.Multi1.prototype.getDescriptor = function() {
+  if (!multitest.Multi1.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {

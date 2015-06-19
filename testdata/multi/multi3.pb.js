@@ -2,9 +2,11 @@
 // source: multi/multi3.proto
 // DO NOT EDIT!
 
-goog.provide('multitest');
+goog.provide('multitest.Multi3');
+goog.provide('multitest.Multi3.HatType');
+goog.provide('multitest.Multi3.HatTypeNames');
 
-goog.require('goog.proto2');
+goog.require('goog.proto2.Message');
 
 
 
@@ -30,7 +32,7 @@ multitest.Multi3.HatTypeNames = {
 multitest.Multi3 = function () {
   goog.proto2.Message.call(this);
 };
-goog.inherits(my.test.Request, goog.proto2.Message);
+goog.inherits(multitest.Multi3, goog.proto2.Message);
 
 /**
  * Sets the value of the hat_type field.
@@ -49,8 +51,8 @@ multitest.Multi3.prototype.getHatType = function() {
 };
 
 /** @override */
-multitest.Multi3.prototype.getDescriptor = function {
-  if (!my.test.Request.descriptor_) {
+multitest.Multi3.prototype.getDescriptor = function() {
+  if (!multitest.Multi3.descriptor_) {
     // The descriptor is created lazily when we instantiate a new instance.
     var descriptorObj = {
       0: {

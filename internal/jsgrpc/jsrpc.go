@@ -84,12 +84,14 @@ func (g *jsgrpc) Generate(file *generator.FileDescriptor) {
 	}
 }
 
+const jsBaseClient = "orian.grpc.Client"
+
 // GenerateImports generates the import declaration for this file.
 func (g *jsgrpc) GenerateImports(file *generator.FileDescriptor) {
 	if len(file.FileDescriptorProto.Service) == 0 {
 		return
 	}
-	g.P("goog.require('orian.jsrpc.Client');")
+	g.P("goog.require('", jsBaseClient, "');")
 }
 
 // generateService generates all the code for the named service.
@@ -99,19 +101,21 @@ func (g *jsgrpc) generateService(file *generator.FileDescriptor, service *pb.Ser
 	origServName := service.GetName()
 	fullServName := file.GetPackage() + "." + origServName
 	servName := generator.CamelCase(origServName)
+	g.gen.ExportType(fullServName)
 
 	g.P("/**")
-	g.P(" * A ", servName, " client.")
+	g.P(" * A ", servName, " service client.")
 	g.P(" * @param {String} baseUrl is prefix for API calls.")
 	g.P(" * @constructor")
-	g.P(" * @extends {orian.jsgrpc.Client}")
+	g.P(" * @extends {", jsBaseClient, "}")
 	g.P(" * @final")
 	g.P(" */")
 	g.P(fullServName, " = function(baseUrl) {")
 	g.gen.In()
-	g.P("orian.jsgrpc.Client.call(this, baseUrl, ", servName, ");")
+	g.P(jsBaseClient, ".call(this, baseUrl, '", fullServName, "');")
 	g.gen.Out()
 	g.P("};")
+	g.P("goog.inherits(", fullServName, ", ", jsBaseClient, ");");
 	g.P()
 
 	// Client method implementations.
